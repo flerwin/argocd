@@ -45,7 +45,7 @@ applications:
         valueFiles:
         - values.yaml
         - ../values-argocd-apps.yaml
-      path: argocd/argocd-install/argo-apps
+      path: argocd/argocd-install/argocd-apps
       repoURL: https://github.com/flerwin/infra.git
       targetRevision: HEAD
     syncPolicy:
