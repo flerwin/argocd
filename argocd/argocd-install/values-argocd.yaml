@@ -1,0 +1,15 @@
+## ArgoCD configuration
+## Ref: https://github.com/argoproj/argo-cd
+##
+## Server
+server:
+  ## ArgoCD config
+  ## reference https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-cm.yaml
+  configEnabled: true
+  config:
+    repositories: |
+      - type: git
+        url: https://github.com/flerwin/infra.git
+      - name: argo-helm
+        type: helm
+        url: https://argoproj.github.io/argo-helm
