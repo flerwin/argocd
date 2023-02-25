@@ -9,7 +9,7 @@ server:
   config:
     repositories: |
       - type: git
-        url: https://github.com/flerwin/argocd.git
+        url: https://github.com/flerwin/infra.git
       - name: argo-helm
         type: helm
         url: https://argoproj.github.io/argo-helm
@@ -26,8 +26,8 @@ server:
           valueFiles:
           - values.yaml
           - ../values-override.yaml
-        path: argocd-install/argo-cd
-        repoURL: https://github.com/flerwin/argocd.git
+        path: argocd/argocd-install/argo-cd
+        repoURL: https://github.com/flerwin/infra.git
         targetRevision: HEAD
       syncPolicy:
         syncOptions:
@@ -39,8 +39,8 @@ server:
         server: https://kubernetes.default.svc
       project: argocd
       source:
-        path: argocd-apps
-        repoURL: https://github.com/flerwin/argocd.git
+        path: argocd/argocd-apps
+        repoURL: https://github.com/flerwin/infra.git
         targetRevision: HEAD
         directory:
           recurse: true
@@ -56,8 +56,8 @@ server:
         server: https://kubernetes.default.svc
       project: argocd
       source:
-        path: argocd-appprojects
-        repoURL: https://github.com/flerwin/argocd.git
+        path: argocd/argocd-appprojects
+        repoURL: https://github.com/flerwin/infra.git
         targetRevision: HEAD
         directory:
           recurse: true
