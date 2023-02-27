@@ -9,7 +9,7 @@ Add argocd helm chart
 helm repo add argo https://argoproj.github.io/argo-helm
 ```
 
-Save argocd to local file (within `flerwin/argocd/argocd-install/argo-cd` folder
+Save argocd to local file (within `flerwin/argocd/argocd-install` folder
 
 ```
 helm pull --untar --untardir . argo/argo-cd
