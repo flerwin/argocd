@@ -33,7 +33,7 @@ applications:
     syncPolicy:
       syncOptions:
       - CreateNamespace=true
-  - name: argocdapps
+  - name: argocd-apps
     namespace: argocd
     destination:
       namespace: argocd
@@ -51,14 +51,14 @@ applications:
     syncPolicy:
       syncOptions:
       - CreateNamespace=true
-  - name: argocd-apps
+  - name: applications
     namespace: argocd
     destination:
       namespace: argocd
       server: https://kubernetes.default.svc
     project: argocd
     source:
-      path: argocd/argocd-apps
+      path: argocd/applications
       repoURL: https://github.com/flerwin/infra.git
       targetRevision: HEAD
       directory:
@@ -68,14 +68,14 @@ applications:
       automated:
         selfHeal: true
         prune: true
-  - name: argocd-appprojects
+  - name: application-projects
     namespace: argocd
     destination:
       namespace: argocd
       server: https://kubernetes.default.svc
     project: argocd
     source:
-      path: argocd/argocd-appprojects
+      path: argocd/application-projects
       repoURL: https://github.com/flerwin/infra.git
       targetRevision: HEAD
       directory:
