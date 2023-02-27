@@ -46,6 +46,9 @@ applications:
       repoURL: https://github.com/flerwin/infra.git
       targetRevision: HEAD
     syncPolicy:
+      automated:
+        selfHeal: true
+        prune: true
       syncOptions:
       - CreateNamespace=true
   - name: argocd-apps
@@ -64,6 +67,9 @@ applications:
       repoURL: https://github.com/flerwin/infra.git
       targetRevision: HEAD
     syncPolicy:
+      automated:
+        selfHeal: true
+        prune: true
       syncOptions:
       - CreateNamespace=true
   - name: applications
@@ -115,5 +121,8 @@ applications:
       repoURL: https://github.com/flerwin/infra.git
       targetRevision: HEAD
     syncPolicy:
+      automated:
+        selfHeal: true
+        prune: true
       syncOptions:
       - CreateNamespace=true
