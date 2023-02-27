@@ -117,6 +117,7 @@ applications:
         version: v3
         valueFiles:
         - values.yaml
+        - ../values-crossplane.yaml
       path: crossplane/crossplane
       repoURL: https://github.com/flerwin/infra.git
       targetRevision: HEAD

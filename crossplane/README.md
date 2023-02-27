@@ -15,4 +15,4 @@ Save crossplane to local file (within `flerwin/crossplane` folder
 helm pull --untar --untardir . crossplane-stable/crossplane
 ```
 
-Create a `values-crossplane.yaml` file if required, which will be used during installation
+Create a `values-crossplane.yaml` file, which will be used during installation
