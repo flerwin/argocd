@@ -9,13 +9,16 @@ metadata:
     {{- end }}
   {{- end }}
   name: {{ include "argo-cd.notifications.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "argo-cd.labels" (dict "context" . "component" .Values.notifications.name "name" .Values.notifications.name) | nindent 4 }}
 spec:
   replicas: 1
   revisionHistoryLimit: {{ .Values.global.revisionHistoryLimit }}
+  {{- with include "argo-cd.strategy" (mergeOverwrite (deepCopy .Values.global.deploymentStrategy) .Values.notifications.deploymentStrategy) }}
   strategy:
-    type: Recreate
+    {{- trim . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "argo-cd.selectorLabels" (dict "context" . "name" .Values.notifications.name) | nindent 6 }}
@@ -45,13 +48,16 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.notifications.priorityClassName | default .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       serviceAccountName: {{ include "argo-cd.notificationsServiceAccountName" . }}
       containers:
         - name: {{ .Values.notifications.name }}
           image: {{ default .Values.global.image.repository .Values.notifications.image.repository }}:{{ default (include "argo-cd.defaultTag" .) .Values.notifications.image.tag }}
           imagePullPolicy: {{ default .Values.global.image.imagePullPolicy .Values.notifications.image.imagePullPolicy }}
-          command:
-            - argocd-notifications
+          args:
+            - /usr/local/bin/argocd-notifications
             - --metrics-port={{ .Values.notifications.containerPorts.metrics }}
             - --loglevel={{ default .Values.global.logging.level .Values.notifications.logLevel }}
             - --logformat={{ default .Values.global.logging.format .Values.notifications.logFormat }}
@@ -74,8 +80,10 @@ spec:
             protocol: TCP
           resources:
             {{- toYaml .Values.notifications.resources | nindent 12 }}
+          {{- with .Values.notifications.containerSecurityContext }}
           securityContext:
-            {{- toYaml .Values.notifications.containerSecurityContext | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           workingDir: /app
           volumeMounts:
             - name: tls-certs
@@ -92,18 +100,28 @@ spec:
       initContainers:
         {{- tpl (toYaml . ) $ | nindent 8 }}
       {{- end }}
+      {{- with include "argo-cd.affinity" (dict "context" . "component" .Values.notifications) }}
       affinity:
-        {{- include "argo-cd.affinity" (dict "context" . "component" .Values.notifications) | nindent 8 }}
-      {{- with .Values.notifications.nodeSelector }}
+        {{- trim . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.notifications.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.notifications.tolerations }}
+      {{- with .Values.notifications.tolerations | default .Values.global.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.notifications.priorityClassName }}
-      priorityClassName: {{ . }}
+      {{- with .Values.notifications.topologySpreadConstraints | default .Values.global.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- range $constraint := . }}
+      - {{ toYaml $constraint | nindent 8 | trim }}
+          {{- if not $constraint.labelSelector }}
+        labelSelector:
+          matchLabels:
+            {{- include "argo-cd.selectorLabels" (dict "context" $ "name" $.Values.notifications.name) | nindent 12 }}
+          {{- end }}
+        {{- end }}
       {{- end }}
       volumes:
         {{- with .Values.notifications.extraVolumes }}

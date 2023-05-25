@@ -8,9 +8,14 @@ metadata:
     {{- end }}
   {{- end }}
   name: {{ template "argo-cd.server.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "argo-cd.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
 spec:
+  {{- with include "argo-cd.strategy" (mergeOverwrite (deepCopy .Values.global.deploymentStrategy) .Values.server.deploymentStrategy) }}
+  strategy:
+    {{- trim . | nindent 4 }}
+  {{- end }}
   {{- if not .Values.server.autoscaling.enabled }}
   replicas: {{ .Values.server.replicas }}
   {{- end }}
@@ -45,13 +50,16 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- with .Values.server.priorityClassName | default .Values.global.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
       serviceAccountName: {{ include "argo-cd.serverServiceAccountName" . }}
       containers:
       - name: {{ .Values.server.name }}
         image: {{ default .Values.global.image.repository .Values.server.image.repository }}:{{ default (include "argo-cd.defaultTag" .) .Values.server.image.tag }}
         imagePullPolicy: {{ default .Values.global.image.imagePullPolicy .Values.server.image.imagePullPolicy }}
-        command:
-        - argocd-server
+        args:
+        - /usr/local/bin/argocd-server
         - --port={{ .Values.server.containerPorts.server }}
         - --metrics-port={{ .Values.server.containerPorts.metrics }}
         {{- with .Values.server.logFormat }}
@@ -326,8 +334,10 @@ spec:
           failureThreshold: {{ .Values.server.readinessProbe.failureThreshold }}
         resources:
           {{- toYaml .Values.server.resources | nindent 10 }}
+        {{- with .Values.server.containerSecurityContext }}
         securityContext:
-          {{- toYaml .Values.server.containerSecurityContext | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         {{- with .Values.server.lifecycle }}
         lifecycle:
           {{- toYaml . | nindent 10 }}
@@ -338,8 +348,10 @@ spec:
         imagePullPolicy: {{ .Values.server.extensions.image.imagePullPolicy }}
         resources:
           {{- toYaml .Values.server.extensions.resources | nindent 10 }}
+        {{- with .Values.server.extensions.containerSecurityContext }}
         securityContext:
-          {{- toYaml .Values.server.extensions.containerSecurityContext | nindent 10 }}
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         volumeMounts:
           - name: extensions
             mountPath: /tmp/extensions/
@@ -353,17 +365,19 @@ spec:
       initContainers:
         {{- tpl (toYaml .) $ | nindent 6 }}
       {{- end }}
+      {{- with include "argo-cd.affinity" (dict "context" . "component" .Values.server) }}
       affinity:
-        {{- include "argo-cd.affinity" (dict "context" . "component" .Values.server) | nindent 8 }}
-      {{- with .Values.server.nodeSelector }}
+        {{- trim . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.server.nodeSelector | default .Values.global.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.tolerations }}
+      {{- with .Values.server.tolerations | default .Values.global.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.server.topologySpreadConstraints }}
+      {{- with .Values.server.topologySpreadConstraints | default .Values.global.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- range $constraint := . }}
       - {{ toYaml $constraint | nindent 8 | trim }}
@@ -416,10 +430,9 @@ spec:
             path: tls.crt
           - key: ca.crt
             path: ca.crt
-      {{- with .Values.server.priorityClassName }}
-      priorityClassName: {{ . }}
-      {{- end }}
+      {{- if .Values.server.hostNetwork }}
       hostNetwork: {{ .Values.server.hostNetwork }}
+      {{- end }}
       {{- with .Values.server.dnsConfig }}
       dnsConfig:
         {{- toYaml . | nindent 8 }}

@@ -78,16 +78,18 @@ Node affinity
   {{- toYaml . -}}
 {{- else -}}
 {{- $preset := .context.Values.global.affinity -}}
+{{- if (eq $preset.podAntiAffinity "soft") }}
 podAntiAffinity:
   preferredDuringSchedulingIgnoredDuringExecution:
-  {{- if (eq $preset.podAntiAffinity "soft") }}
   - weight: 100
     podAffinityTerm:
       labelSelector:
         matchLabels:
           app.kubernetes.io/name: {{ include "argo-cd.name" .context }}-{{ .component.name }}
       topologyKey: kubernetes.io/hostname
-  {{- else }}
+{{- else if (eq $preset.podAntiAffinity "hard") }}
+podAntiAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
   - weight: 100
     podAffinityTerm:
       labelSelector:
@@ -99,21 +101,39 @@ podAntiAffinity:
       matchLabels:
         app.kubernetes.io/name: {{ include "argo-cd.name" .context }}-{{ .component.name }}
     topologyKey: kubernetes.io/hostname
-  {{- end }}
+{{- end }}
 {{- with $preset.nodeAffinity.matchExpressions }}
+{{- if (eq $preset.nodeAffinity.type "soft") }}
 nodeAffinity:
-  {{- if (eq $preset.nodeAffinity.type "soft") }}
   preferredDuringSchedulingIgnoredDuringExecution:
   - weight: 1
     preference:
       matchExpressions:
       {{- toYaml . | nindent 6 }}
-  {{- else }}
+{{- else if (eq $preset.nodeAffinity.type "hard") }}
+nodeAffinity:
   requiredDuringSchedulingIgnoredDuringExecution:
     nodeSelectorTerms:
     - matchExpressions:
       {{- toYaml . | nindent 6 }}
-  {{- end }}
+{{- end }}
 {{- end -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Common deployment strategy definition
+- Recreate don't have additional fields, we need to remove them if added by the mergeOverwrite 
+*/}}
+{{- define "argo-cd.strategy" -}}
+{{- $preset := . -}}
+{{- if (eq $preset.type "Recreate") }}
+type: Recreate
+{{- else if (eq $preset.type "RollingUpdate") }}
+type: RollingUpdate
+{{- with $preset.rollingUpdate }}
+rollingUpdate:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
 {{- end -}}

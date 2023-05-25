@@ -1,7 +1,10 @@
 annotations:
   artifacthub.io/changes: |
     - kind: added
-      description: Multiple sources for Application and ApplicationSet
+      description: Rollout strategy for ApplicationSet
+  artifacthub.io/signKey: |
+    fingerprint: 2B8F22F57260EFA67BE1C5824B11F800CD9D2252
+    url: https://argoproj.github.io/argo-helm/pgp_keys.asc
 apiVersion: v2
 description: A Helm chart for managing additional Argo CD Applications and Projects
 home: https://github.com/argoproj/argo-helm
@@ -15,4 +18,4 @@ maintainers:
   url: https://argoproj.github.io/
 name: argocd-apps
 type: application
-version: 0.0.8
+version: 1.2.0
