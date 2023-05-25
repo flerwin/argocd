@@ -1,4 +1,3 @@
 provider:
   packages:
-    - xpkg.upbound.io/upbound/provider-aws:v0.27.0
-    - ghcr.io/flerwin/provider-jet-vultr:v0.0.0-29.g04de0b2
+    - xpkg.upbound.io/upbound/provider-aws:v0.35.0
