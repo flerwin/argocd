@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mynewapp
+  namespace: argocd
+spec:
+  project: testproject
+  source:
+    repoURL: https://github.com/flerwin/mynewapp.git
+    targetRevision: HEAD
+    path: deploy
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: testproject
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mynewapp-repo
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  type: git
+  url: https://github.com/flerwin/mynewapp.git
